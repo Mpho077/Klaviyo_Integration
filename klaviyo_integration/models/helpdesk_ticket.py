@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import requests
 
 from odoo import api, fields, models, _
@@ -100,6 +101,10 @@ class HelpdeskTicket(models.Model):
     def _send_klaviyo_event(self):
         """Send event to Klaviyo API"""
         self.ensure_one()
+        
+        if self.klaviyo_event_sent:
+            _logger.info('Klaviyo event already sent for ticket %s. Skipping.', self.name)
+            return False
         
         # Check if Klaviyo is enabled
         klaviyo_enabled = self.env['ir.config_parameter'].sudo().get_param(
@@ -206,9 +211,11 @@ class HelpdeskTicket(models.Model):
             'resolution_date': fields.Datetime.now().isoformat(),
         }
         
-        # Add ticket description if available
+        # Add ticket description if available (strip HTML tags)
         if self.description:
-            properties['ticket_description'] = self.description[:500]
+            clean_desc = re.sub(r'<[^>]+>', ' ', self.description)
+            clean_desc = re.sub(r'\s+', ' ', clean_desc).strip()
+            properties['ticket_description'] = clean_desc[:500]
         
         # Add goodwill amount if applicable
         if self.klaviyo_resolution_type == 'goodwill_approved' and self.klaviyo_goodwill_amount:
