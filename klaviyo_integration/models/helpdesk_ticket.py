@@ -76,16 +76,24 @@ class HelpdeskTicket(models.Model):
         # Send Klaviyo event
         self._send_klaviyo_event()
         
-        # Mark ticket as resolved (if stage_id field exists)
-        resolved_stage = self.env['helpdesk.stage'].search([
-            ('is_close', '=', True),
-            '|',
-            ('team_ids', 'in', self.team_id.ids),
-            ('team_ids', '=', False)
-        ], limit=1)
-        
-        if resolved_stage:
-            self.stage_id = resolved_stage
+        # Mark ticket as resolved - find the closing stage
+        stage_model = self.env['helpdesk.stage']
+        # Determine correct field name for "closed" stage (varies by Odoo version)
+        close_field = (
+            'is_close' if 'is_close' in stage_model._fields
+            else 'closed' if 'closed' in stage_model._fields
+            else 'fold' if 'fold' in stage_model._fields
+            else None
+        )
+        if close_field:
+            resolved_stage = stage_model.search([
+                (close_field, '=', True),
+                '|',
+                ('team_ids', 'in', self.team_id.ids),
+                ('team_ids', '=', False)
+            ], limit=1)
+            if resolved_stage:
+                self.stage_id = resolved_stage
         
         return True
 
