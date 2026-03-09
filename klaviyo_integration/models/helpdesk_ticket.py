@@ -261,7 +261,7 @@ class HelpdeskTicket(models.Model):
             return self.sale_order_id
         
         # Try to find from source document
-        if self.source_document:
+        if hasattr(self, 'source_document') and self.source_document:
             sale_order = self.env['sale.order'].search([
                 ('name', '=', self.source_document)
             ], limit=1)
