@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class HelpdeskTicketReport(models.Model):
@@ -15,3 +15,17 @@ class HelpdeskTicketReport(models.Model):
 
     klaviyo_event_sent = fields.Boolean(
         string='Klaviyo Event Sent', readonly=True)
+
+    @api.model
+    def _select(self):
+        return super()._select() + """,
+            T.klaviyo_resolution_type,
+            T.klaviyo_goodwill_amount,
+            T.klaviyo_event_sent"""
+
+    @api.model
+    def _group_by(self):
+        return super()._group_by() + """,
+            T.klaviyo_resolution_type,
+            T.klaviyo_goodwill_amount,
+            T.klaviyo_event_sent"""
