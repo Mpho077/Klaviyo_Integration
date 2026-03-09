@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend Helpdesk Ticket Form View -->
+    <record id="helpdesk_ticket_view_form_klaviyo" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.klaviyo</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Klaviyo fields to the form -->
+            <xpath expr="//sheet" position="inside">
+                <notebook position="inside">
+                    <page string="Klaviyo" name="klaviyo_page">
+                        <group>
+                            <group string="Resolution Details">
+                                <field name="klaviyo_resolution_type"/>
+                                <field name="klaviyo_goodwill_amount" 
+                                       invisible="klaviyo_resolution_type != 'goodwill_approved'"/>
+                                <field name="klaviyo_coupon_code"/>
+                            </group>
+                            <group string="Event Status">
+                                <field name="klaviyo_event_sent" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Event Logs" invisible="not klaviyo_event_log_ids">
+                            <field name="klaviyo_event_log_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="create_date"/>
+                                    <field name="event_type"/>
+                                    <field name="email"/>
+                                    <field name="response_code"/>
+                                    <field name="state" decoration-success="state == 'success'" decoration-danger="state == 'failed'" decoration-warning="state == 'pending'" widget="badge"/>
+                                </list>
+                            </field>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
+            
+            <!-- Add buttons to header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_send_klaviyo_event" 
+                        string="Send Klaviyo Event" 
+                        type="object" 
+                        class="btn-secondary"
+                        invisible="not klaviyo_resolution_type or klaviyo_event_sent"
+                        groups="helpdesk.group_helpdesk_manager"/>
+                <button name="action_resolve_and_send_klaviyo" 
+                        string="Resolve &amp; Send to Klaviyo" 
+                        type="object" 
+                        class="btn-primary"
+                        invisible="not klaviyo_resolution_type or klaviyo_event_sent"
+                        groups="helpdesk.group_helpdesk_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Klaviyo Event Log List View -->
+    <record id="klaviyo_event_log_view_list" model="ir.ui.view">
+        <field name="name">klaviyo.event.log.list</field>
+        <field name="model">klaviyo.event.log</field>
+        <field name="arch" type="xml">
+            <list string="Klaviyo Event Logs" create="0" edit="0">
+                <field name="create_date"/>
+                <field name="ticket_id"/>
+                <field name="event_type"/>
+                <field name="email"/>
+                <field name="response_code"/>
+                <field name="state" decoration-success="state == 'success'" decoration-danger="state == 'failed'" decoration-warning="state == 'pending'" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Klaviyo Event Log Form View -->
+    <record id="klaviyo_event_log_view_form" model="ir.ui.view">
+        <field name="name">klaviyo.event.log.form</field>
+        <field name="model">klaviyo.event.log</field>
+        <field name="arch" type="xml">
+            <form string="Klaviyo Event Log" create="0" edit="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Event Information">
+                            <field name="name"/>
+                            <field name="event_type"/>
+                            <field name="create_date"/>
+                        </group>
+                        <group string="Customer">
+                            <field name="ticket_id"/>
+                            <field name="partner_id"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                    <group string="Response">
+                        <field name="response_code"/>
+                        <field name="error_message" invisible="not error_message"/>
+                    </group>
+                    <notebook>
+                        <page string="Payload">
+                            <field name="payload" widget="text"/>
+                        </page>
+                        <page string="Response Body">
+                            <field name="response_body" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Klaviyo Event Log Action -->
+    <record id="action_klaviyo_event_log" model="ir.actions.act_window">
+        <field name="name">Klaviyo Event Logs</field>
+        <field name="res_model">klaviyo.event.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Klaviyo events have been sent yet.
+            </p>
+            <p>
+                Resolve helpdesk tickets with a resolution type to send events to Klaviyo.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_klaviyo_event_log"
+              name="Klaviyo Events"
+              parent="helpdesk.helpdesk_menu_report"
+              action="action_klaviyo_event_log"
+              sequence="100"
+              groups="helpdesk.group_helpdesk_manager"/>
+</odoo>
