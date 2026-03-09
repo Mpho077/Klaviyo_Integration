@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend Helpdesk Ticket Analysis Pivot View -->
+    <record id="helpdesk_ticket_report_analysis_pivot_klaviyo" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.report.analysis.pivot.klaviyo</field>
+        <field name="model">helpdesk.ticket.report.analysis</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_report_analysis_pivot"/>
+        <field name="arch" type="xml">
+            <xpath expr="//pivot" position="inside">
+                <field name="klaviyo_resolution_type" type="col"/>
+                <field name="klaviyo_goodwill_amount" type="measure"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend Helpdesk Ticket Analysis Graph View -->
+    <record id="helpdesk_ticket_report_analysis_graph_klaviyo" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.report.analysis.graph.klaviyo</field>
+        <field name="model">helpdesk.ticket.report.analysis</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_report_analysis_graph"/>
+        <field name="arch" type="xml">
+            <xpath expr="//graph" position="inside">
+                <field name="klaviyo_resolution_type"/>
+                <field name="klaviyo_goodwill_amount" type="measure"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend Helpdesk Ticket Analysis Search View -->
+    <record id="helpdesk_ticket_report_analysis_search_klaviyo" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.report.analysis.search.klaviyo</field>
+        <field name="model">helpdesk.ticket.report.analysis</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_report_analysis_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Resolution Type" name="group_by_resolution_type"
+                        context="{'group_by': 'klaviyo_resolution_type'}"/>
+                <filter string="Klaviyo Sent" name="klaviyo_sent"
+                        domain="[('klaviyo_event_sent', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
